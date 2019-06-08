@@ -1,24 +1,29 @@
 
 class Game
-    attr_reader :word
+    attr_reader :the_word
 
     def initialize
-        @word = File.readlines("../5desk.txt").sample
-        @guessed_letters = String.new
+        @the_word = random_word.upcase
+        @player_input = String.new
         @attempts_left = 10
     end
 
-    def censor
+    def random_word
+        @the_word = File.readlines("../5desk.txt").sample
+    end
+
+    def hide_the_word
         
     end
 
-    def show_guessed_letters
-        puts @word
+    def update #change all of this
+        puts @hidden_word
+        puts @the_word
     end
 
     def guess_a_letter
-        @guessed_letters << gets.chomp
-        puts @guessed_letters
+        @player_input << gets.chomp
+        puts "All the letters you have guessed: #{@player_input}"
     end
 
     def save
@@ -30,19 +35,21 @@ class Game
     end
     
     def has_won?
-        @guessed_letters == @word.to_s
+        if @player_input.include?("w") #change this
+            puts "You won!"
+        elsif @attempts_left == 0
+            puts "You lost..."
+        end
     end
 
     def game_round
+        hide_the_word
         while @attempts_left > 0
-            show_guessed_letters
             guess_a_letter
+            update
             @attempts_left -= 1
-            if has_won?
-                puts "You won!"
-                return
-            end
-            break if @guessed_letters.include?("q")
+            has_won?
+            break if @player_input.include?("q") #delete this
         end
     end
 
