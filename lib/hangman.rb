@@ -1,3 +1,4 @@
+require 'yaml'
 
 class Game
     attr_reader :the_word
@@ -20,17 +21,30 @@ class Game
 
     def explain_rules
         puts
-        puts "Type any letter A-Z or a word."
+        puts "Let's play hangman!"
+        puts
+        puts "To save the game type: savegame"
+        puts "To load a previous save type: loadgame"
         puts "To quit the game type: quitgame"
         puts
-        puts "Can you find out this word? #{@hidden_word}"
+        if @player_arr.include?("SAVEGAME")
+            print "Can you find out this word? "
+            update_hidden_word
+        else
+            puts "Can you find out this word? #{@hidden_word}"
+        end
+        puts "Type any letter A-Z or a word."
         puts "Attempts left: #{@attempts_left}/10"
     end
 
     def player_input
         @player_arr << gets.chomp.upcase
-        if @player_arr[-1].empty? #false input
+        if @player_arr[-1].empty? #blank input
             puts "Type any letter A-Z or a word."
+        elsif @player_arr[-1] == "SAVEGAME" #player saves
+            save
+        elsif @player_arr[-1] == "LOADGAME" #loads previous save
+            load
         elsif @player_arr.include?("QUITGAME") #player quits
             puts "You gave up..."
         elsif @correct_letters.include?(@player_arr[-1]) #correct guess
@@ -45,7 +59,7 @@ class Game
         end
     end
 
-    def update_attempts_left
+    def show_attempts_left
         puts "Attempts left: #{@attempts_left}/10"
     end
 
@@ -83,8 +97,6 @@ class Game
     end
 
     def game_round
-        puts
-        puts "Let's play hangman!"
         hide_the_word
         explain_rules
         while @attempts_left > 0
@@ -92,7 +104,7 @@ class Game
             print "Enter your guess: "
             player_input
             break if @player_arr.include?("QUITGAME")
-            update_attempts_left
+            show_attempts_left
             update_correct_letters
             update_wrong_letters
             break if @player_arr.include?(@the_word.upcase)
@@ -103,13 +115,46 @@ class Game
     end
 
     def save
+        game_data = {
+            the_word: @the_word,
+            hidden_word: @hidden_word,
+            player_arr: @player_arr,
+            correct_letters: @correct_letters,
+            wrong_letters: @wrong_letters,
+            attempts_left: @attempts_left
+        }
 
+        Dir.mkdir("saves") unless Dir.exists? "saves"
+
+        puts "WARNING! If the filename already exist that data will be overwritten!"
+        print "Enter a filename for your save: "
+        filename = gets.chomp
+
+        File.open("saves/#{filename}.yaml", "w") do |file|
+            file.puts game_data.to_yaml
+        end
+        puts "Game saved."
     end
 
     def load
-
+        filename = nil
+        loop do
+            print "Please enter the filename: "
+            filename = gets.chomp
+            break if File.exists? "saves/#{filename}.yaml"
+        end
+        
+        game_data = YAML.load_file("saves/#{filename}.yaml")
+        
+        @the_word = game_data[:the_word]
+        @hidden_word = game_data[:hidden_word]
+        @player_arr = game_data[:player_arr]
+        @correct_letters = game_data[:correct_letters]
+        @wrong_letters = game_data[:wrong_letters]
+        @attempts_left = game_data[:attempts_left]
+        
+        game_round
     end
-
 end
 
 

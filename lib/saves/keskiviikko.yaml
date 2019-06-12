@@ -1,0 +1,14 @@
+---
+:the_word: RUBY
+:hidden_word: RUB_
+:player_arr:
+- R
+- U
+- B
+- SAVEGAME
+:correct_letters:
+- R
+- U
+- B
+:wrong_letters: []
+:attempts_left: 10
